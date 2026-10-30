@@ -2,3 +2,11 @@ __pycache__/
 *.pyc
 sms.txt
 report.json
+
+# output dei container e campioni da analizzare: mai nel repo
+data/*
+!data/.gitkeep
+sandbox/samples/*
+!sandbox/samples/.gitkeep
+sandbox/reports/*
+!sandbox/reports/.gitkeep

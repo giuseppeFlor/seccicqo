@@ -1,0 +1,9 @@
+# Accesso USB diretto al telefono dal container adb (solo host Linux).
+#   docker compose -f docker-compose.yml -f docker-compose.usb.yml up -d adb
+services:
+  adb:
+    devices:
+      - /dev/bus/usb:/dev/bus/usb
+    # telefoni collegati dopo l'avvio del container (bus USB, major 189)
+    device_cgroup_rules:
+      - "c 189:* rmw"
