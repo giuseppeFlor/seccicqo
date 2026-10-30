@@ -1,0 +1,84 @@
+# SecCicqo: ogni componente gira nel proprio container.
+#
+#   docker compose build
+#   docker compose up -d adb                 # server adb (USB su Linux: vedi docker-compose.usb.yml)
+#   docker compose run --rm sms-phishing     # analisi SMS -> ./data/report.json
+#   docker compose run --rm sandbox          # triage dei campioni in ./sandbox/samples
+#
+# Vedi README.md per Windows/macOS (adb dell'host o adb via Wi-Fi).
+
+name: seccicqo
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt:
+    - no-new-privileges:true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,nodev,size=64m
+
+services:
+  # Unico container che tocca il telefono. La porta 5037 è raggiungibile solo
+  # dagli altri container sulla rete "phone": non viene pubblicata sull'host.
+  adb:
+    build:
+      context: .
+      dockerfile: docker/adb/Dockerfile
+    image: seccicqo/adb:latest
+    restart: unless-stopped
+    networks: [phone]
+    # Il telefono via USB si aggiunge con docker-compose.usb.yml (solo Linux);
+    # senza, si usa il debug wireless: docker compose exec adb adb pair/connect
+    volumes:
+      - adb-keys:/root/.android
+
+  # Controllo phishing negli SMS (sms_phishing/check_sms.py).
+  sms-phishing:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: docker/sms-phishing/Dockerfile
+    image: seccicqo/sms-phishing:latest
+    # stesso utente dell'host, così i file in ./data restano tuoi (Linux)
+    user: "${SECCICQO_UID:-1000}:${SECCICQO_GID:-1000}"
+    depends_on: [adb]
+    networks: [phone]
+    environment:
+      # Su Windows/macOS: ADB_SERVER_SOCKET=tcp:host.docker.internal:5037
+      ADB_SERVER_SOCKET: ${ADB_SERVER_SOCKET:-tcp:adb:5037}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data:/data
+
+  # Ambiente protetto per analizzare APK/file sospetti (solo analisi statica).
+  # Avviato solo su richiesta: docker compose run --rm sandbox
+  sandbox:
+    <<: *hardening
+    profiles: [sandbox]
+    build:
+      context: .
+      dockerfile: docker/sandbox/Dockerfile
+    image: seccicqo/sandbox:latest
+    network_mode: none          # nessuna rete: il campione non può contattare nessuno
+    # utente non privilegiato (stesso UID dell'host per scrivere in ./sandbox/reports)
+    user: "${SECCICQO_UID:-1000}:${SECCICQO_GID:-1000}"
+    ipc: private
+    pids_limit: 128             # niente fork bomb
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1.0
+    ulimits:
+      nofile: {soft: 1024, hard: 1024}
+      core: 0                   # nessun core dump con pezzi del campione
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=256m
+    volumes:
+      - ./sandbox/samples:/samples:ro          # campioni in sola lettura
+      - ./sandbox/reports:/reports:rw          # unico punto scrivibile
+
+networks:
+  phone: {}
+
+volumes:
+  adb-keys:
