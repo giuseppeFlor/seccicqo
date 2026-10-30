@@ -1,0 +1,9 @@
+Row: 0 _id=101, address=+393401234567, date=1761753600000, type=1, body=Gentile cliente, il suo conto BancoPosta è stato sospeso. Verifica i tuoi dati entro 24 ore: https://poste-italiane-verifica.top/login
+Row: 1 _id=102, address=BRT, date=1761757200000, type=1, body=Il tuo pacco è in giacenza, paga le spese di spedizione di 1,99€ qui: bit.ly/3xYzAbc
+Row: 2 _id=103, address=Mamma, date=1761760800000, type=1, body=Ciao, arrivo alle 8, compri il pane?
+Row: 3 _id=104, address=PosteInfo, date=1761764400000, type=1, body=Il codice per accedere all'app è 123456.
+Non condividerlo con nessuno. https://www.poste.it
+Row: 4 _id=105, address=+447700900123, date=1761768000000, type=1, body=Ciao mamma, questo è il mio nuovo numero, scrivimi su WhatsApp
+Row: 5 _id=106, address=Amazon, date=1761771600000, type=1, body=Il tuo ordine è stato spedito. Traccia: https://www.amazon.it/gp/your-orders
+Row: 6 _id=107, address=+393331112223, date=1761775200000, type=1, body=INPS: hai diritto a un rimborso di 312€. Conferma i tuoi dati bancari: http://185.23.44.10/inps/rimborso
+Row: 7 _id=108, address=+393339998887, date=1761778800000, type=2, body=ok ci vediamo dopo
